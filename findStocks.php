@@ -32,8 +32,11 @@ if ($stocks != null && isset($stocks->$now)) {
         getStockInfo($matches[1][2], $todayStocks);
     }
     $todayAll = array($now => $todayStocks);
-    $all = $todayAll;
-//    $all = array_merge($todayAll, $stocks);
+    if ($stocks != null) {
+        $all = array_push($todayAll, $stocks);
+    } else {
+        $all = $todayAll;
+    }
     $allStr = json_encode($all);
     file_put_contents(STOCKTXT, $allStr);
 }
