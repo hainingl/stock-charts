@@ -15,16 +15,31 @@ $stocks = array();
 $now = date('M-d-Y');
 
 $contentFile = __DIR__ . "/" . STOCKTXT;
+
+$allInfo = array();
+
 if (file_exists($contentFile)) {
-    $stocks = json_decode(file_get_contents($contentFile));
+    $stocks = json_decode(file_get_contents($contentFile), true);
+    foreach ($stocks as $dayInfo) {
+        array_push($allInfo, $dayInfo);
+    }
 }
 
-if ($stocks != null && isset($stocks->$now)) {
-    foreach ($stocks->$now as $stockInfo) {
-        $stock = $stockInfo[0];
-        openStockChart($stock);
+$noTodayInfo = true;
+if ($stocks != null) {
+    foreach ($stocks as  $dayInfo) {
+        foreach ($dayInfo as $dayKey => $info) {
+            if ($dayKey == $now) {
+                $noTodayInfo = false;
+                foreach($info as $s) {
+                    $stock = $s[0];
+                    openStockChart($stock);
+                }
+            }
+        }
     }
-} else {
+}
+if ($noTodayInfo) {
     $todayStocks = array();
     foreach ($links as $link) {
         $matches = getStocks($link);
@@ -32,12 +47,9 @@ if ($stocks != null && isset($stocks->$now)) {
         getStockInfo($matches[1][2], $todayStocks);
     }
     $todayAll = array($now => $todayStocks);
-    if ($stocks != null) {
-        $all = array_push($todayAll, $stocks);
-    } else {
-        $all = $todayAll;
-    }
-    $allStr = json_encode($all);
+    array_push($allInfo, $todayAll);
+
+    $allStr = json_encode($allInfo);
     file_put_contents(STOCKTXT, $allStr);
 }
 
